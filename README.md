@@ -199,7 +199,6 @@ Invalid Login
 * SQLite Database Integration
 * Object-Oriented Programming (OOP) Version
 
-=======
 
 ## Author
 
