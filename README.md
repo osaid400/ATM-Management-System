@@ -30,6 +30,19 @@ ATM-Management-System/
 └── README.md
 ```
 
+## Sample Accounts
+
+| Account Number | PIN  |
+|---------------:|-----:|
+| 3011           | 1234 |
+| 3012           | 3457 |
+| 3013           | 7456 |
+| 3014           | 9345 |
+| 3015           | 9755 |
+| 3016           | 1245 |
+| 3017           | 6654 |
+| 3018           | 3321 |
+
 ## How to Run
 
 1. Clone the repository.
@@ -38,13 +51,9 @@ ATM-Management-System/
 git clone https://github.com/osaid400/ATM-Management-System.git
 ```
 
-2. Navigate to the project folder.
+2. Open the project folder.
 
-```bash
-cd ATM-Management-System
-```
-
-3. Run the program.
+3. Run the Python file.
 
 ```bash
 python "ATM Management System.py"
@@ -189,6 +198,8 @@ Invalid Login
 * Account Lock After Multiple Wrong PIN Attempts
 * SQLite Database Integration
 * Object-Oriented Programming (OOP) Version
+
+=======
 
 ## Author
 
