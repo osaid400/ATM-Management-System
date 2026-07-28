@@ -7,15 +7,17 @@
 import os
 import json
 import sys
+from datetime import datetime, timedelta
 
 print("============ Welcome to ATM Management System =============")
 
 class Bank_Account():
-    def __init__(self, name, account_number, balance, pin):
+    def __init__(self, name, account_number, balance, pin, transactions=None):
         self.__balance = float(balance)
         self.__pin = str(pin).zfill(4)
         self.name = name
         self.account_number = account_number
+        self.__transactions = transactions or []
 
     @property
     def balance(self):
@@ -24,10 +26,20 @@ class Bank_Account():
     def verify_pin(self, input_pin):
         return str(input_pin).zfill(4) == self.__pin
 
+    def record_transaction(self, transaction_type, amount):
+        now = datetime.now()
+        self.__transactions.append({
+            "Type": transaction_type,
+            "Amount": float(amount),
+            "Date": now.strftime("%Y-%m-%d"),
+            "Time": now.strftime("%H:%M:%S")
+        })
+
     def deposit(self, amount):
         if amount <= 0:
             raise ValueError("Amount cannot be negative or zero!")
         self.__balance += amount
+        self.record_transaction("Deposit", amount)
 
     def withdraw(self, amount):
         if amount <= 0:
@@ -35,10 +47,13 @@ class Bank_Account():
         if amount > self.__balance:
             raise ValueError("Insufficient Balance!")
         self.__balance -= amount
+        self.record_transaction("Withdrawal", amount)
 
     def change_pin(self, old_pin, new_pin):
         if not self.verify_pin(old_pin):
             raise ValueError("Incorrect current PIN!")
+
+        account.record_transaction("PIN Changed", 0)
 
         new_pin_str = str(new_pin).zfill(4)
         if not new_pin_str.isdigit() or len(new_pin_str) != 4:
@@ -58,7 +73,8 @@ class Bank_Account():
             "Holder_name": self.name,
             "Account_number": self.account_number,
             "Balance": self.__balance,
-            "PIN": self.__pin
+            "PIN": self.__pin,
+            "Transactions": self.__transactions
         }
 
     @classmethod
@@ -67,9 +83,24 @@ class Bank_Account():
             name=account_data.get("Holder_name") or account_data.get("Name"),
             account_number=account_data.get("Account_number") or account_data.get("Account Number"),
             balance=account_data.get("Balance", 0),
-            pin=str(account_data.get("PIN", "1234"))
+            pin=str(account_data.get("PIN", "1234")),
+            transactions=account_data.get("Transactions", [])
         )
 
+    def statement(self, days=30):
+        cutoff = datetime.now() - timedelta(days=days)
+        recent_transactions = []
+
+        for tx in self.__transactions:
+            try:
+                tx_datetime = datetime.strptime(f"{tx['Date']} {tx['Time']}", "%Y-%m-%d %H:%M:%S")
+            except (KeyError, ValueError):
+                continue
+
+            if tx_datetime >= cutoff:
+                recent_transactions.append(tx)
+
+        return recent_transactions
 
 class ATM_Manager():    
 
@@ -116,16 +147,10 @@ class ATM_Manager():
         return None
 
     def authenticate(self, account):
-        pin_input = input("Enter 4-digit PIN: ").strip()
-
-        if not pin_input.isdigit() or len(pin_input) != 4:
-            print("Invalid PIN format! PIN must contain exactly 4 digits.")
+        pin = input("Enter 4-digit PIN: ").strip()
+        if not account.verify_pin(pin):
+            print("Incorrect PIN!")
             return False
-
-        if not account.verify_pin(pin_input):
-            print("Incorrect PIN! Access Denied.")
-            return False
-
         return True
 
     def check_balance(self, account):
@@ -191,8 +216,35 @@ class ATM_Manager():
         self.save_accounts()
         print("PIN changed successfully!")
 
-    def cash_statement(self):
+    def cash_statement(self, account):
+        statement = account.statement(days=30)
+        print()
+        print("=" * 60)
+        print(f"         30-Day Cash Statement for {account.name} ({account.account_number})")
+        print("=" * 60)
+        print(f"Current Balance: Rs. {account.balance:,.2f}")
+        print("Last 30 days transactions:")
+        print("-" * 60)
 
+        if not statement:
+            print("No deposits or withdrawals found in the last 30 days.")
+            print("=" * 60)
+            return
+
+        header = f"{'Date':<12} {'Time':<10} {'Type':<12} {'Amount':>14}"
+        print(header)
+        print("-" * 60)
+
+        for tx in statement:
+            tx_type = tx.get("Type", "Unknown")
+            amount = tx.get("Amount", 0.0)
+            date = tx.get("Date", "----/--/--")
+            time = tx.get("Time", "--:--:--")
+            print(f"{date:<12} {time:<10} {tx_type:<12} Rs. {amount:>10,.2f}")
+
+        print("=" * 60)
+        print("End of Statement")
+        print("=" * 60)
 
     @staticmethod
     def log_out():
