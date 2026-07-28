@@ -107,13 +107,15 @@ Login Successful
 ### ATM Menu
 
 ```text
+=============== Select the Option ===============
 1. Check Balance
 2. Deposit Money
 3. Withdraw Money
-4. Change PIN
+4. Change Pin
 5. Cash Statement
 6. Logout
 0. Back to Main Menu
+
 ```
 
 ### Deposit
@@ -149,16 +151,18 @@ PIN Changed Successfully!
 
 ```text
 ============================================================
-30-Day Cash Statement
-
-Current Balance: Rs. 26,000.00
-
-Date         Time       Type            Amount
-------------------------------------------------------------
-2026-07-28   14:15:30   Deposit         Rs. 5,000.00
-2026-07-28   14:18:12   Withdrawal      Rs. 2,500.00
-2026-07-28   14:22:41   PIN Changed     Rs. 0.00
+         30-Day Cash Statement for Ali (3011)
 ============================================================
+Current Balance: Rs. 25,000.00
+Last 30 days transactions:
+------------------------------------------------------------
+Date         Time       Type                 Amount
+------------------------------------------------------------
+2026-07-28   09:39:41   Deposit      Rs.  15,000.00
+============================================================
+End of Statement
+============================================================
+
 ```
 
 ## How Data Persistence Works
