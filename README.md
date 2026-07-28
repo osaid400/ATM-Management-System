@@ -1,24 +1,43 @@
+# ATM Management System
 
-# ATM Management System 
-
-A beginner-friendly console-based ATM Management System built using Python. This project demonstrates menu-driven programming, functions, JSON file handling, input validation, and exception handling while simulating basic ATM operations.
+A console-based **ATM Management System** built with Python. This project simulates the core functionality of an Automated Teller Machine (ATM) while demonstrating Object-Oriented Programming (OOP), encapsulation, JSON-based data persistence, authentication, transaction logging, input validation, and exception handling.
 
 ## Features
 
-* Login using Account Number and PIN
-* Check Account Balance
-* Deposit Money
-* Withdraw Money
-* Change PIN
-* Logout
-* Store account data using JSON
-* Input Validation
-* Exception Handling
+* Login using Account Number and 4-digit PIN
+* Secure PIN authentication
+* Check account balance
+* Deposit money
+* Withdraw money
+* Change account PIN
+* View 30-day cash statement
+* Automatic transaction logging with date and time
+* Persistent storage using JSON
+* Input validation and exception handling
+* Logout functionality
 
 ## Technologies Used
 
 * Python 3
 * JSON
+
+## Concepts Covered
+
+* Object-Oriented Programming (OOP)
+* Classes and Objects
+* Encapsulation (`private attributes`)
+* Properties (`@property`)
+* Class Methods (`@classmethod`)
+* Static Methods (`@staticmethod`)
+* Lists and Dictionaries
+* JSON File Handling
+* File Persistence
+* Date & Time (`datetime`)
+* Loops
+* Conditional Statements
+* Exception Handling
+* Input Validation
+* Menu-Driven Programming
 
 ## Project Structure
 
@@ -30,175 +49,150 @@ ATM-Management-System/
 └── README.md
 ```
 
-## Sample Accounts
+> **Note:** `accounts.json` is created automatically when the program is first executed. It stores account information and transaction history locally and is excluded from the repository using `.gitignore`.
 
-| Account Number | PIN  |
-|---------------:|-----:|
-| 3011           | 1234 |
-| 3012           | 3457 |
-| 3013           | 7456 |
-| 3014           | 9345 |
-| 3015           | 9755 |
-| 3016           | 1245 |
-| 3017           | 6654 |
-| 3018           | 3321 |
+## Default Sample Accounts
+
+| Account Holder | Account Number |  PIN |
+| -------------- | -------------: | ---: |
+| Ali            |           3011 | 4321 |
+| Abdullah       |           3012 | 4321 |
+| Ahmed          |           3013 | 1234 |
+| Zohaib         |           3014 | 1234 |
+| Fabiha         |           3015 | 1234 |
+| Rida           |           3016 | 1234 |
+| Asghar         |           3017 | 1234 |
+| Zayan          |           3018 | 1234 |
+| Akshay Kumar   |           3019 | 1234 |
+| Obaid          |           3020 | 1234 |
 
 ## How to Run
 
-1. Clone the repository.
+1. Clone the repository:
 
 ```bash
 git clone https://github.com/osaid400/ATM-Management-System.git
 ```
 
-2. Open the project folder.
+2. Navigate to the project folder:
 
-3. Run the Python file.
+```bash
+cd ATM-Management-System
+```
+
+3. Run the program:
 
 ```bash
 python "ATM Management System.py"
 ```
 
----
+## Example Output
 
-# Example Outputs
-
-## Login
+### Login
 
 ```text
-============ Welcome to ATM Management System =============
+============ Welcome to ATM Management System ============
 
-=============== Select the Option ===============
 1. Login
 0. Exit
 
 Enter the number: 1
 
-Enter the Account number: 3012
-Enter the pin: 3457
+Enter the Account Number: 3012
+Enter the PIN: 1234
 
 Login Successful
 ```
 
----
-
-## Check Balance
+### ATM Menu
 
 ```text
-=============== Select the Option ===============
 1. Check Balance
 2. Deposit Money
 3. Withdraw Money
-4. Change Pin
-5. Logout
+4. Change PIN
+5. Cash Statement
+6. Logout
 0. Back to Main Menu
-
-Enter the number: 1
-
-Current Balance: Rs. 23,000
 ```
 
----
-
-## Deposit Money
+### Deposit
 
 ```text
-Enter the number: 2
-
 Enter Amount: 5000
 
 Money Deposited Successfully!
+
+Current Balance: Rs. 28,500.00
 ```
 
----
-
-## Withdraw Money
+### Withdraw
 
 ```text
-Enter the number: 3
-
-Enter Amount: 2000
+Enter Amount: 2500
 
 Money Withdrawn Successfully!
+
+Current Balance: Rs. 26,000.00
 ```
 
----
-
-## Change PIN
+### Change PIN
 
 ```text
-Enter the number: 4
+Enter Current PIN: 1234
+Enter New PIN: 9876
 
-Enter current PIN: 3457
-Enter new PIN: 9876
-
-PIN changed successfully!
+PIN Changed Successfully!
 ```
 
----
-
-## Incorrect PIN
+### Cash Statement
 
 ```text
-Enter current PIN: 1111
+============================================================
+30-Day Cash Statement
 
-Incorrect PIN!
+Current Balance: Rs. 26,000.00
+
+Date         Time       Type            Amount
+------------------------------------------------------------
+2026-07-28   14:15:30   Deposit         Rs. 5,000.00
+2026-07-28   14:18:12   Withdrawal      Rs. 2,500.00
+2026-07-28   14:22:41   PIN Changed     Rs. 0.00
+============================================================
 ```
 
----
+## How Data Persistence Works
 
-## Insufficient Balance
-
-```text
-Enter Amount: 90000
-
-Insufficient Balance!
-```
-
----
-
-## Logout
-
-```text
-Enter the number: 5
-
-Logged out successfully.
-```
-
----
-
-## Invalid Login
-
-```text
-Enter the Account number: 3012
-Enter the pin: 1234
-
-Invalid Login
-```
-
----
-
-## Concepts Practiced
-
-* Functions
-* Lists & Dictionaries
-* JSON File Handling
-* Loading and Saving Data
-* Conditional Statements
-* Loops
-* Input Validation
-* Exception Handling
-* Menu-Driven Programming
+* On startup, the program checks whether `accounts.json` exists.
+* If the file exists, all account data is loaded automatically.
+* If it doesn't exist, default sample accounts are created.
+* Every deposit, withdrawal, PIN change, or other account update is immediately saved to `accounts.json`.
+* Every transaction is recorded with its **type, amount, date, and time**, allowing the program to generate a 30-day cash statement.
 
 ## Future Improvements
 
-* Transaction History
-* Money Transfer Between Accounts
-* PIN Confirmation Before Transactions
-* Account Lock After Multiple Wrong PIN Attempts
-* SQLite Database Integration
-* Object-Oriented Programming (OOP) Version
+* Transfer money between accounts
+* Three-attempt PIN lock system
+* ATM cash withdrawal denominations
+* Mini statement printing
+* Admin panel
+* SQLite database integration
+* Password hashing for PIN security
+* Receipt generation
 
+## Learning Outcomes
+
+This project helped me practice:
+
+* Designing applications using Object-Oriented Programming
+* Implementing encapsulation with private attributes
+* Creating reusable classes and methods
+* Managing persistent data with JSON
+* Recording transaction history
+* Working with dates and times using `datetime`
+* Implementing secure user authentication
+* Validating user input and handling exceptions
+* Building a complete menu-driven console application
 
 ## Author
 
