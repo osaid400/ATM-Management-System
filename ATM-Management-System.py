@@ -1,5 +1,5 @@
 
-# ATM Management System
+# ATM MANAGEMENT SYSTEM
 # Author: Muhammad Abdullah Farooq
 # Language: Python
 # Level: Beginner
@@ -10,129 +10,215 @@ import sys
 
 print("============ Welcome to ATM Management System =============")
 
-# ---------------- File Handling ----------------
+class Bank_Account():
+    def __init__(self, name, account_number, balance, pin):
+        self.__balance = float(balance)
+        self.__pin = str(pin).zfill(4)
+        self.name = name
+        self.account_number = account_number
 
-def load_accounts():
-    if os.path.exists("accounts.json"):
-        with open("accounts.json", "r") as file:
-            data = json.load(file)
-        return data
-    else:
-        return []
+    @property
+    def balance(self):
+        return self.__balance
 
-def save_accounts():
-    with open("accounts.json", "w") as file:
-        json.dump(accounts, file, indent=4)
+    def verify_pin(self, input_pin):
+        return str(input_pin).zfill(4) == self.__pin
 
-accounts = load_accounts()
+    def deposit(self, amount):
+        if amount <= 0:
+            raise ValueError("Amount cannot be negative or zero!")
+        self.__balance += amount
 
-if not accounts:
-    accounts = [
-        {"Name" : "Ali", "Account Number": 3011, "PIN" : 1234, "Balance": 15000},
-        {"Name" : "Abdullah", "Account Number": 3012, "PIN" : 3457, "Balance": 23000},
-        {"Name" : "Sudies", "Account Number": 3013, "PIN" : 7456, "Balance": 19000},
-        {"Name" : "Alina", "Account Number": 3014, "PIN" : 9345, "Balance": 1000},
-        {"Name" : "Asghar", "Account Number": 3015, "PIN" : 9755, "Balance": 50000},
-        {"Name" : "Bilal", "Account Number": 3016, "PIN" : 1245, "Balance": 13000},
-        {"Name" : "Zayan", "Account Number": 3017, "PIN" : 6654, "Balance": 23000},
-        {"Name" : "Zubair", "Account Number": 3018, "PIN" : 3321, "Balance": 35000},
-    ]  
-    save_accounts()
+    def withdraw(self, amount):
+        if amount <= 0:
+            raise ValueError("Amount cannot be negative or zero!")
+        if amount > self.__balance:
+            raise ValueError("Insufficient Balance!")
+        self.__balance -= amount
 
-# ---------------- Functions ----------------
+    def change_pin(self, old_pin, new_pin):
+        if not self.verify_pin(old_pin):
+            raise ValueError("Incorrect current PIN!")
 
-def check_balance(account):
-    print(f"Current Balance: Rs. {account['Balance']:,}")
+        new_pin_str = str(new_pin).zfill(4)
+        if not new_pin_str.isdigit() or len(new_pin_str) != 4:
+            raise ValueError("PIN must be exactly 4 digits!")
 
-def deposit_money(account):
-    try:
-        amount = int(input("Enter Amount: "))
-    except ValueError:
-        print("Invalid Amount!")
-        return
+        self.__pin = new_pin_str
 
-    if amount <= 0:
-        print("Amount cannot be Negative or Zero!")
-        return
-    account["Balance"] += amount
-    save_accounts()
-    print("Money Deposited Successfully!")
-    print(f"Current Balance: Rs. {account['Balance']:,}")
+    def __str__(self):
+        return (
+            f"Account Holder: {self.name}\n"
+            f"Account Number: {self.account_number}\n"
+            f"Balance       : {self.__balance:.2f}"
+        )
 
-def withdraw_money(account):
-    try:
-        amount = int(input("Enter Amount: "))
-    except ValueError:
-        print("Invalid Amount!")
-        return
+    def to_dict(self):
+        return {
+            "Holder_name": self.name,
+            "Account_number": self.account_number,
+            "Balance": self.__balance,
+            "PIN": self.__pin
+        }
+
+    @classmethod
+    def from_dict(cls, account_data):
+        return cls(
+            name=account_data.get("Holder_name") or account_data.get("Name"),
+            account_number=account_data.get("Account_number") or account_data.get("Account Number"),
+            balance=account_data.get("Balance", 0),
+            pin=str(account_data.get("PIN", "1234"))
+        )
+
+
+class ATM_Manager():    
+
+    def __init__(self, filename="accounts.json"):
+        self.filename = filename
+        self.accounts = []
+        self.load_accounts()
+
+        if not self.accounts:
+            self.accounts = [
+                Bank_Account("Ali", 3011, 15000, "1234"),
+                Bank_Account("Abdullah", 3012, 23500, "1234"),
+                Bank_Account("Ahmed", 3013, 23500, "1234"),
+                Bank_Account("Zohaib", 3014, 55500, "1234"),
+                Bank_Account("Fabiha", 3015, 13500, "1234"),
+                Bank_Account("Rida", 3016, 52000, "1234"),
+                Bank_Account("Asghar", 3017, 32500, "1234"),
+                Bank_Account("Zayan", 3018, 76500, "1234"),
+                Bank_Account("Akshay Kumar", 3019, 40000, "1234"),
+                Bank_Account("Obaid", 3020, 45000, "1234"),
+            ]
+            self.save_accounts()
+
+    def load_accounts(self):
+        if os.path.exists(self.filename):
+            try:
+                with open(self.filename, "r") as file:
+                    data = json.load(file)
+                    self.accounts = [Bank_Account.from_dict(item) for item in data]
+            except (json.JSONDecodeError, ValueError, OSError):
+                self.accounts = []
+        else:
+            self.accounts = []
+
+    def save_accounts(self):
+        with open(self.filename, "w") as file:
+            data = [account.to_dict() for account in self.accounts]
+            json.dump(data, file, indent=4)
+
+    def find_account(self, account_number):
+        for account in self.accounts:
+            if account.account_number == account_number:
+                return account
+        return None
+
+    def authenticate(self, account):
+        pin_input = input("Enter 4-digit PIN: ").strip()
+
+        if not pin_input.isdigit() or len(pin_input) != 4:
+            print("Invalid PIN format! PIN must contain exactly 4 digits.")
+            return False
+
+        if not account.verify_pin(pin_input):
+            print("Incorrect PIN! Access Denied.")
+            return False
+
+        return True
+
+    def check_balance(self, account):
+        print(f"Current Balance: Rs. {account.balance:,.2f}")
+ 
+    def deposit_money(self, account):
+        try:
+            amount = float(input("Enter Amount: "))
+        except ValueError:
+            print("Invalid Amount!")
+            return
+
+        if amount <= 0:
+            print("Amount cannot be Negative or Zero!")
+            return
+
+        account.deposit(amount)
+        self.save_accounts()
+        print("Money Deposited Successfully!")
+        print(f"Current Balance: Rs. {account.balance:,.2f}")
+
+    def withdraw_money(self, account):
+        try:
+            amount = float(input("Enter Amount: "))
+        except ValueError:
+            print("Invalid Amount!")
+            return
     
-    if amount <= 0:
-        print("Invalid Amount!")
-        return
-    if amount > account ["Balance"]:
-        print("Insufficient Balance!")
-        return
-    account["Balance"] -= amount
-    save_accounts()
-    print("Money Withdrawn Successfully!")
-    print(f"Current Balance: Rs. {account['Balance']:,}")
-
-
-def change_pin(account):
+        if amount <= 0:
+            print("Invalid Amount!")
+            return
         try:
-            old = int(input("Enter current PIN: "))
-        except ValueError:
+            account.withdraw(amount)
+        except ValueError as exc:
+            print(exc)
+            return
+
+        self.save_accounts()
+        print("Money Withdrawn Successfully!")
+        print(f"Current Balance: Rs. {account.balance:,.2f}")
+
+    def change_pin(self, account):
+        old_pin = input("Enter current PIN: ").strip()
+        if not old_pin.isdigit() or len(old_pin) != 4:
             print("Invalid PIN!")
             return
 
-        if old != account["PIN"]:
-            print("Incorrect PIN!")
-            return
-
-        try:
-            new = int(input("Enter new PIN: "))
-        except ValueError:
-            print("Invalid PIN!")
-            return
-
-        if new == old:
-            print("New PIN cannot be same as old PIN.")
-            return
-        
-        if new <1000 or new >9999:
+        new_pin = input("Enter new PIN: ").strip()
+        if not new_pin.isdigit() or len(new_pin) != 4:
             print("PIN must be exactly 4 digits!")
             return
 
-        account["PIN"] = new
-        save_accounts()
+        if new_pin == old_pin:
+            print("New PIN cannot be same as old PIN.")
+            return
+
+        try:
+            account.change_pin(old_pin, new_pin)
+        except ValueError as exc:
+            print(exc)
+            return
+
+        self.save_accounts()
         print("PIN changed successfully!")
 
-def log_out():
-    print("Logged out successfully.")
+    def cash_statement(self):
 
-def log_in():
-    try:
-        account_number = int(input("Enter the Account number: "))
-    except ValueError:
-        print("Invalid Account Number!")
-        return
+
+    @staticmethod
+    def log_out():
+        print("Logged out successfully.")
+
+    def log_in(self):
+        try:
+            account_number = int(input("Enter the Account number: "))
+        except ValueError:
+            print("Invalid Account Number!")
+            return None
     
-    try:
-        pin = int(input("Enter the pin: "))
-    except ValueError:
-        print("Invalid PIN Number")
-        return
+        pin = input("Enter the pin: ").strip()
+        if not pin.isdigit() or len(pin) != 4:
+            print("Invalid PIN Number")
+            return None
 
-    for account in accounts:
-        if account["Account Number"] == account_number and account["PIN"] == pin:
-            print("Login Successful")
-            return account
-    print("Invalid Account Number or PIN.")
-    return None
+        for account in self.accounts:
+            if account.account_number == account_number and account.verify_pin(pin):
+                print("Login Successful")
+                return account
 
-# ---------------- MENU's ----------------
+        print("Invalid Account Number or PIN.")
+        return None
 
-def atm_menu(account):
+def atm_menu(manager, account):
     while True:
         print()
         print("=============== Select the Option ===============")
@@ -140,7 +226,8 @@ def atm_menu(account):
         print("2. Deposit Money")
         print("3. Withdraw Money")
         print("4. Change Pin")
-        print("5. Logout")
+        print("5. Cash Statement")
+        print("6. Logout")
         print("0. Back to Main Menu")
         
         try:
@@ -150,20 +237,24 @@ def atm_menu(account):
             continue
 
         if choice_2 == 1:
-            check_balance(account)
+            manager.check_balance(account)
         elif choice_2 == 2:
-            deposit_money(account)
+            manager.deposit_money(account)
         elif choice_2 == 3:
-            withdraw_money(account)
+            manager.withdraw_money(account)
         elif choice_2 == 4:
-            change_pin(account)
+            manager.change_pin(account)
         elif choice_2 == 5:
-            log_out()
+            manager.cash_statement(account)
+        elif choice_2 == 6:
+            manager.log_out()
             break
         elif choice_2 == 0:
             break
         else:
             print("Invalid Choice!")
+
+atm_manager = ATM_Manager()
 
 while True:
     print()
@@ -178,9 +269,9 @@ while True:
         continue
 
     if choice == 1:
-        account = log_in()
+        account = atm_manager.log_in()
         if account:
-            atm_menu(account)
+            atm_menu(atm_manager, account)
     elif choice == 0:
         print("Thank You for using our application :) ")
         print("Good Bye!")
