@@ -1,3 +1,21 @@
+# Python / Environment virtual files
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# IDE & Editor settings
+.vscode/
+.idea/
+
+# Local Project Data & Receipts (Personal/Generated files)
+data/accounts.json
 receipts/*
 !receipts/.gitkeep
 
+# System generated files
+.DS_Store
+Thumbs.db
