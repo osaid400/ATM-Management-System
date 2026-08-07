@@ -260,8 +260,8 @@ This project helped me practice:
 
 ## Author
 
-**Osaid**
+**MUHAMMAD ABDULLAH FAROOQ**
 
 GitHub: https://github.com/osaid400
 
-```
+
