@@ -11,10 +11,9 @@ env/
 .vscode/
 .idea/
 
-# Local Project Data & Receipts (Personal/Generated files)
-data/accounts.json
+# Receipts directory structure tracking
 receipts/*
-!receipts/.gitkeep
+!receipts/**/.gitkeep
 
 # System generated files
 .DS_Store
