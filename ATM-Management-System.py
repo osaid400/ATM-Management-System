@@ -1,15 +1,14 @@
-
+# ==========================================
 # ATM MANAGEMENT SYSTEM
 # Author: Muhammad Abdullah Farooq
-# Language: Python
-# Level: Beginner
+# Language: Python 3.13
+# =========================================== 
 
 import os
 import json
 import sys
+from pathlib import Path
 from datetime import datetime, timedelta
-
-print("============ Welcome to ATM Management System =============")
 
 class Bank_Account():
     def __init__(self, name, account_number, balance, pin, transactions=None):
@@ -53,7 +52,7 @@ class Bank_Account():
         if not self.verify_pin(old_pin):
             raise ValueError("Incorrect current PIN!")
 
-        account.record_transaction("PIN Changed", 0)
+        self.record_transaction("PIN Changed", 0)
 
         new_pin_str = str(new_pin).zfill(4)
         if not new_pin_str.isdigit() or len(new_pin_str) != 4:
@@ -107,6 +106,7 @@ class ATM_Manager():
     def __init__(self, filename="accounts.json"):
         self.filename = filename
         self.accounts = []
+        self._receipt_counter = 0
         self.load_accounts()
 
         if not self.accounts:
@@ -169,8 +169,10 @@ class ATM_Manager():
 
         account.deposit(amount)
         self.save_accounts()
+        receipt_path = self.generate_receipt(account, "Deposit", amount, "Cash Deposit")
         print("Money Deposited Successfully!")
         print(f"Current Balance: Rs. {account.balance:,.2f}")
+        print(f"Receipt saved to: {receipt_path}")
 
     def withdraw_money(self, account):
         try:
@@ -189,8 +191,10 @@ class ATM_Manager():
             return
 
         self.save_accounts()
+        receipt_path = self.generate_receipt(account, "Withdrawal", amount, "Cash Withdrawal")
         print("Money Withdrawn Successfully!")
         print(f"Current Balance: Rs. {account.balance:,.2f}")
+        print(f"Receipt saved to: {receipt_path}")
 
     def change_pin(self, account):
         old_pin = input("Enter current PIN: ").strip()
@@ -246,6 +250,101 @@ class ATM_Manager():
         print("End of Statement")
         print("=" * 60)
 
+    def ensure_receipts_directory(self, subfolder="general"):
+        receipts_dir = Path(__file__).resolve().parent / "receipts"
+        target_dir = receipts_dir / subfolder if subfolder else receipts_dir
+        target_dir.mkdir(parents=True, exist_ok=True)
+        return target_dir
+
+    def next_receipt_id(self):
+        self._receipt_counter += 1
+        return self._receipt_counter
+
+    def generate_receipt(self, account, transaction_type, amount, description="", subfolder="general", transaction_id=None):
+        receipts_dir = self.ensure_receipts_directory(subfolder)
+        receipt_id = transaction_id if transaction_id is not None else self.next_receipt_id()
+        file_name = f"{account.account_number}_TXN{receipt_id:04d}.txt"
+        receipt_path = receipts_dir / file_name
+
+        balance = account.balance
+        lines = [
+            "=" * 60,
+            "ATM MANAGEMENT SYSTEM - RECEIPT".center(60),
+            "=" * 60,
+            f"Account Holder : {account.name}",
+            f"Account Number : {account.account_number}",
+            f"Date           : {datetime.now().strftime('%Y-%m-%d')}",
+            f"Time           : {datetime.now().strftime('%H:%M:%S')}",
+            f"Transaction    : {transaction_type}",
+            f"Amount         : Rs. {float(amount):,.2f}",
+            f"Description    : {description or 'No description provided'}",
+            f"Current Balance: Rs. {balance:,.2f}",
+            "=" * 60,
+            "Thank you for banking with us!"
+        ]
+
+        receipt_path.write_text("\n".join(lines), encoding="utf-8")
+        return f"receipts/{subfolder}/{file_name}"
+
+    def get_mini_statement(self, account, limit=5):
+        transactions = list(reversed(account._Bank_Account__transactions))
+        return transactions[:limit]
+
+    def print_mini_statement(self, account, limit=5):
+        transactions = self.get_mini_statement(account, limit)
+        print()
+        print("=" * 60)
+        print(f"Mini Statement for {account.name} ({account.account_number})")
+        print("=" * 60)
+        print(f"Current Balance: Rs. {account.balance:,.2f}")
+        if not transactions:
+            print("No transactions recorded yet.")
+            print("=" * 60)
+            return
+
+        for tx in transactions:
+            tx_type = tx.get("Type", "Unknown")
+            amount = tx.get("Amount", 0.0)
+            date = tx.get("Date", "----/--/--")
+            time = tx.get("Time", "--:--:--")
+            print(f"{date} {time} | {tx_type:<15} | Rs. {amount:,.2f}")
+        print("=" * 60)
+
+    def transfer_money(self, sender_account, receiver_account, amount=None):
+        if amount is None:
+            try:
+                amount = float(input("Enter Amount: "))
+            except ValueError:
+                print("Invalid Amount!")
+                return False
+
+        if amount <= 0:
+            print("Amount cannot be Negative or Zero!")
+            return False
+
+        if sender_account.account_number == receiver_account.account_number:
+            print("You cannot transfer money to your own account.")
+            return False
+
+        if sender_account.balance < amount:
+            print("Insufficient balance for this transfer.")
+            return False
+
+        sender_account._Bank_Account__balance -= amount
+        receiver_account._Bank_Account__balance += amount
+        sender_account.record_transaction("Transfer Sent", amount)
+        receiver_account.record_transaction("Transfer Received", amount)
+        self.save_accounts()
+
+        transaction_id = self.next_receipt_id()
+        sender_receipt = self.generate_receipt(sender_account, "Transfer Sent", amount, f"To {receiver_account.name}", subfolder="sent", transaction_id=transaction_id)
+        receiver_receipt = self.generate_receipt(receiver_account, "Transfer Received", amount, f"From {sender_account.name}", subfolder="received", transaction_id=transaction_id)
+        print("Money transferred successfully!")
+        print(f"Current Balance: Rs. {sender_account.balance:,.2f}")
+        print(f"Receipt saved to: {sender_receipt}")
+        print(f"Receipt saved to: {receiver_receipt}")
+        return True
+
     @staticmethod
     def log_out():
         print("Logged out successfully.")
@@ -271,16 +370,22 @@ class ATM_Manager():
         return None
 
 def atm_menu(manager, account):
+
     while True:
         print()
-        print("=============== Select the Option ===============")
+        print("=" * 60)
+        print(f"Welcome Back, {account.name}".center(60))
+        print("=" * 60)
         print("1. Check Balance")
         print("2. Deposit Money")
         print("3. Withdraw Money")
         print("4. Change Pin")
-        print("5. Cash Statement")
-        print("6. Logout")
+        print("5. Last 30 days Cash Statement")
+        print("6. Transfer Money")
+        print("7. Bank Statement")
+        print("8. Logout")
         print("0. Back to Main Menu")
+        print("-" * 60)
         
         try:
             choice_2 = int(input("Enter the number: "))
@@ -299,6 +404,15 @@ def atm_menu(manager, account):
         elif choice_2 == 5:
             manager.cash_statement(account)
         elif choice_2 == 6:
+            receiver_number = int(input("Enter recipient account number: "))
+            receiver_account = manager.find_account(receiver_number)
+            if receiver_account is None:
+                print("Recipient account not found.")
+                continue
+            manager.transfer_money(account, receiver_account)
+        elif choice_2 == 7:
+            manager.print_mini_statement(account)
+        elif choice_2 == 8:
             manager.log_out()
             break
         elif choice_2 == 0:
@@ -309,10 +423,13 @@ def atm_menu(manager, account):
 atm_manager = ATM_Manager()
 
 while True:
-    print()
-    print("=============== Select the Option ===============")
+
+    print("=" * 60)
+    print("WELCOME TO ATM MANAGEMENT SYSTEM".center(60))
+    print("=" * 60)
     print("1. Login")
     print("0. Exit")
+    print("-" * 60)
 
     try:
         choice = int(input("Enter the number: "))
