@@ -17,6 +17,7 @@ receipts/**/*.txt
 
 # Ignore local account data
 data/accounts.json
+data/vault.json
 
 # System generated files
 .DS_Store
