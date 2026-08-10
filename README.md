@@ -1,67 +1,56 @@
 # ATM Management System
 
-A console-based **ATM Management System** built with Python. This project simulates the core functionality of an Automated Teller Machine (ATM) while demonstrating Object-Oriented Programming (OOP), encapsulation, JSON-based data persistence, authentication, transaction logging, input validation, modular design, and exception handling.
+A console-based **ATM Management System** built with Python. This project simulates real-world Automated Teller Machine (ATM) operations while demonstrating Object-Oriented Programming (OOP), SHA-256 security hashing, multi-panel separation, cash vault management, JSON-based data persistence, transaction logging, input validation, modular design, and exception handling.
 
-## Features
+## Key Features
 
-* Login using Account Number and 4-digit PIN
-* Secure PIN authentication
-* Check account balance
-* Deposit money
-* Withdraw money
-* Change account PIN
-* View 30-day cash statement
-* Mini statement printing (Last 5 transactions)
-* Transfer money between accounts
-* Automated receipt generation (Saved in `receipts/` subfolders)
-* Automatic transaction logging with date and time
-* Persistent storage using JSON
-* Input validation and exception handling
-* Logout functionality
+* **Dual Panel Architecture:** Distinct **Customer ATM Portal** and **Admin / Maintenance Panel**.
+* **SHA-256 Security:** PINs are stored securely as SHA-256 hashes instead of plaintext.
+* **3-Attempt Account Lockout:** Automatically freezes account after 3 consecutive invalid PIN attempts (Admin unfreeze required).
+* **Withdrawal Denomination Breakdown:** Strictly enforces multiples of Rs. 500/1000 and calculates note breakdown (e.g., Rs. 3,500 = 3x Rs. 1,000 + 1x Rs. 500).
+* **ATM Cash Vault Tracking:** Real-time machine vault balance tracking with "ATM Out of Cash" safeguards and Admin refill capabilities.
+* **Daily Withdrawal Limit:** Enforces a maximum withdrawal limit of Rs. 50,000 per day.
+* **Fast Cash Withdrawal:** One-click quick cash options (Rs. 1k, 2k, 5k, 10k).
+* **Fund Transfer (IBFT):** Secure account-to-account money transfers.
+* **Statements & Receipts:** Supports Mini Statements (Last 5 transactions), 30-Day Cash Statements, and automated `.txt` receipt generation inside structured subfolders (`receipts/`).
+* **Persistent Storage:** JSON file persistence for accounts (`data/accounts.json`) and vault balance (`data/vault.json`).
 
 ## Technologies Used
 
-* Python 3
-* JSON
+* **Python 3**
+* **JSON** (Data Persistence)
+* **Hashlib** (SHA-256 Encryption)
 
 ## Concepts Covered
 
 * Object-Oriented Programming (OOP)
-* Classes and Objects
+* Encapsulation (`private attributes` & `@property`)
+* Data Security & Hashing (`hashlib.sha256`)
 * Modular Architecture & Package Structuring
-* Encapsulation (`private attributes`)
-* Properties (`@property`)
-* Class Methods (`@classmethod`)
-* Static Methods (`@staticmethod`)
-* Lists and Dictionaries
-* JSON File Handling
-* File Persistence
-* Date & Time (`datetime`)
-* Loops
-* Conditional Statements
-* Exception Handling
-* Input Validation
-* Menu-Driven Programming
+* File Persistence & JSON Handling
+* Date & Time Processing (`datetime` & `timedelta`)
+* Exception Handling & Input Validation
+* Menu-Driven CLI Design
 
 ## Project Structure
 
 ```text
-ATM-Management-System/
+ATM Management System/
 │
 ├── data/
-│   └── accounts.json         # Persistent JSON account records
+│   ├── accounts.json         # Persistent JSON account records
+│   └── vault.json            # ATM Machine vault cash tracking
 │
 ├── receipts/                 # Auto-generated transaction receipts
-│   ├── general/
-│   ├── received/
-│   └── sent/
-│       └── .gitkeep
+│   ├── general/              # Withdrawal & general receipts
+│   ├── received/             # IBFT transfer received receipts
+│   └── sent/                 # IBFT transfer sent receipts
 │
 ├── src/                      # Source code modules
 │   ├── __init__.py
-│   ├── models.py             # BankAccount data model & methods
-│   ├── manager.py            # ATMManager business & persistence logic
-│   └── UI.py                 # CLI menus and display formatting
+│   ├── manager.py            # ATMManager business, security & persistence logic
+│   ├── models.py             # BankAccount model & encapsulation logic
+│   └── ui.py                 # Customer & Admin CLI menus
 │
 ├── .gitignore                # Excludes pycache, receipts, and local data
 ├── main.py                   # Application entry point
@@ -69,22 +58,22 @@ ATM-Management-System/
 
 ```
 
-> **Note:** `data/accounts.json` is created automatically when the program is first executed. It stores account information and transaction history locally and is excluded from the repository using `.gitignore`.
+## Sample Default Accounts
 
-## Default Sample Accounts
+> **Note:** Default PIN for all sample accounts is `1234`. Upon first run/transaction, the PIN is automatically hashed into SHA-256.
 
-| Account Holder | Account Number | PIN |
-| --- | --- | --- |
-| Ali | 3011 | 4321 |
-| Abdullah | 3012 | 4321 |
-| Ahmed | 3013 | 1234 |
-| Zohaib | 3014 | 1234 |
-| Fabiha | 3015 | 1234 |
-| Rida | 3016 | 1234 |
-| Asghar | 3017 | 1234 |
-| Zayan | 3018 | 1234 |
-| Akshay Kumar | 3019 | 1234 |
-| Obaid | 3020 | 1234 |
+| Account Holder | Account Number | Initial Balance | Initial Status |
+| --- | --- | --- | --- |
+| Ali | 3011 | Rs. 25,000.00 | Active |
+| Abdullah | 3012 | Rs. 45,000.00 | Active |
+| Ahmed | 3013 | Rs. 30,000.00 | Active |
+| Zohaib | 3014 | Rs. 55,000.00 | Active |
+| Fabiha | 3015 | Rs. 18,000.00 | Active |
+
+**Admin / Technician Panel Credentials:**
+
+* **Username:** `admin`
+* **Password:** `12345`
 
 ## How to Run
 
@@ -102,166 +91,157 @@ cd ATM-Management-System
 
 ```
 
-3. Run the program:
+3. Run the application:
 
 ```bash
 python main.py
 
 ```
 
-## Example Output
+## Example Outputs
 
-### Login
+### 1. Main Welcome Portal
 
 ```text
 ============================================================
-              WELCOME TO ATM MANAGEMENT SYSTEM              
+                ATM AUTOMATED TELLER MACHINE                
+============================================================
+1. Customer Login (Insert Card)
+2. Technician / Admin Panel
+0. Exit Application
+------------------------------------------------------------
+Select Option: 1
+
+```
+
+### 2. Customer ATM Main Menu
+
+```text
+============================================================
+                      Welcome, Abdullah                     
+============================================================
+1. Balance Inquiry
+2. Cash Withdrawal (Other Amount)
+3. Fast Cash
+4. Fund Transfer (IBFT)
+5. Change PIN
+6. Mini Statement
+7. 30-Day Statement
+0. Exit / Logout
+------------------------------------------------------------
+Select Option: 
+
+```
+
+### 3. Cash Withdrawal & Denomination Breakdown
+
+```text
+Enter Amount to Withdraw (Multiples of 500): 3500
+
+****************************************
+          CASH DISPENSED: Rs. 3,500.00  
+             Denominations:             
+               Rs. 1,000 x 3
+               Rs.   500 x 1
+****************************************
+Remaining Balance: Rs. 41,500.00
+Receipt saved at: receipts/general/3012_TXN0001.txt
+
+```
+
+### 4. Fast Cash Menu
+
+```text
+============================================================
+                    FAST CASH WITHDRAWAL                    
+============================================================
+1. Rs. 1,000
+2. Rs. 2,000
+3. Rs. 5,000
+4. Rs. 10,000
+0. Back
+------------------------------------------------------------
+Select Fast Cash Option: 3
+
+****************************************
+          CASH DISPENSED: Rs. 5,000.00  
+             Denominations:             
+               Rs. 1,000 x 5
+               Rs.   500 x 0
+****************************************
+Remaining Balance: Rs. 36,500.00
+Receipt saved at: receipts/general/3012_TXN0002.txt
+
+```
+
+### 5. Fund Transfer (IBFT)
+
+```text
+Enter Recipient Account Number: 3011
+Enter Transfer Amount: 5000
+Transfer Successful! Remaining Balance: Rs. 31,500.00
+
+```
+
+### 6. Mini Statement Display
+
+```text
+============================================================
+             Mini Statement for Abdullah (3012)             
+============================================================
+Current Balance: Rs. 31,500.00
+------------------------------------------------------------
+2026-08-10 10:15:30 | Transfer Sent          | Rs.   5,000.00
+2026-08-10 10:12:04 | Cash Withdrawal        | Rs.   5,000.00
+2026-08-10 10:08:18 | Cash Withdrawal        | Rs.   3,500.00
 ============================================================
 
-1. Login
-0. Exit
-------------------------------------------------------------
+```
 
-Enter choice: 1
+### 7. Account Freeze on 3 Failed PIN Attempts
 
+```text
 Enter Account Number: 3012
-Enter 4-digit PIN: 4321
+Enter 4-Digit PIN: 0000
+Authentication Failed: Incorrect PIN! Remaining attempts: 2
 
-Login Successful!
+Enter 4-Digit PIN: 0000
+Authentication Failed: Incorrect PIN! Remaining attempts: 1
+
+Enter 4-Digit PIN: 0000
+Authentication Failed: Account FROZEN due to 3 consecutive wrong PIN attempts! Contact Admin.
 
 ```
 
-### ATM Menu
+### 8. Admin / Maintenance Panel & Unfreezing
 
 ```text
 ============================================================
-                     Welcome Back, Abdullah                     
+             ATM MAINTENANCE & TECHNICIAN PANEL             
 ============================================================
-1. Check Balance
-2. Deposit Money
-3. Withdraw Money
-4. Change Pin
-5. Cash Statement (30 Days)
-6. Transfer Money
-7. Mini Statement
-8. Logout
-0. Back to Main Menu
+1. View ATM Vault Balance
+2. Refill ATM Cash Vault
+3. View All Accounts
+4. Unfreeze Account
+0. Logout
 ------------------------------------------------------------
-Enter choice: 
+Select Option: 4
+
+Enter Account Number to Unfreeze: 3012
+Account 3012 (Abdullah) Unfrozen Successfully!
 
 ```
-
-### Deposit
-
-```text
-Enter Amount to Deposit: 5000
-
-Deposit Successful! Balance: Rs. 27,500.00
-Receipt saved to: receipts/general/3012_TXN0001.txt
-
-```
-
-### Withdraw
-
-```text
-Enter Amount to Withdraw: 2500
-
-Withdrawal Successful! Balance: Rs. 25,000.00
-Receipt saved to: receipts/general/3012_TXN0002.txt
-
-```
-
-### Change PIN
-
-```text
-Enter current PIN: 4321
-Enter new PIN: 9876
-
-PIN changed successfully!
-
-```
-
-### Transfer Money
-
-```text
-Enter recipient account number: 3011
-Enter transfer amount: 1000
-
-Money Transferred Successfully!
-
-```
-
-### Cash Statement
-
-```text
-============================================================
-         30-Day Cash Statement for Abdullah (3012)
-============================================================
-Current Balance: Rs. 22,500.00
-Last 30 days transactions:
-------------------------------------------------------------
-Date         Time       Type                 Amount
-------------------------------------------------------------
-2026-07-28   09:44:43   Withdrawal      Rs.     500.00
-2026-08-07   08:52:04   Transfer Sent   Rs.   1,000.00
-2026-08-07   09:00:09   Transfer Rec.   Rs.     500.00
-============================================================
-
-```
-
-### Mini Statement
-
-```text
-============================================================
-Mini Statement for Abdullah (3012)
-============================================================
-Current Balance: Rs. 22,500.00
-2026-08-07 09:00:09 | Transfer Rec.   | Rs. 500.00
-2026-08-07 08:52:04 | Transfer Sent   | Rs. 1,000.00
-2026-07-28 09:44:43 | Withdrawal      | Rs. 500.00
-============================================================
-
-```
-
-## How Data Persistence Works
-
-* On startup, the program checks whether `data/accounts.json` exists.
-* If the file exists, all account data is loaded automatically.
-* If it doesn't exist, default sample accounts are created.
-* Every deposit, withdrawal, PIN change, transfer, or other account update is immediately saved to `data/accounts.json`.
-* Every transaction is recorded with its **type, amount, date, and time**, allowing the program to generate a 30-day cash statement and mini statement.
-* Transaction receipts are automatically generated and structured in designated folders under `receipts/`.
 
 ## Future Improvements
 
-* Three-attempt PIN lock system
-* ATM cash withdrawal denominations logic
-* Password hashing for PIN security (e.g., using `bcrypt` or `argon2`)
-* Account locking mechanism after multiple invalid login attempts
 * SQLite or PostgreSQL database integration replacing JSON persistence
 * RESTful API backend implementation (using FastAPI / Flask)
 * Graphical User Interface (GUI using PyQt or CustomTkinter)
-* Multi-currency support and live exchange rate conversion
-
-## Learning Outcomes
-
-This project helped me practice:
-
-* Designing applications using Object-Oriented Programming
-* Structuring code into scalable Python modules (Models, Managers, UI)
-* Implementing encapsulation with private attributes
-* Creating reusable classes and methods
-* Managing persistent data with JSON
-* Recording transaction history and generating text receipts
-* Working with dates and times using `datetime`
-* Implementing secure user authentication
-* Validating user input and handling exceptions
-* Building a complete menu-driven console application
+* OTP / Two-Factor Authentication simulation for high-value transactions
 
 ## Author
 
 **MUHAMMAD ABDULLAH FAROOQ**
 
 GitHub: https://github.com/osaid400
-
 
